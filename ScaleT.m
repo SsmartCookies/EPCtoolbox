@@ -2,7 +2,7 @@
 * @Author: SsmartCookies
 * @Date:   2019-04-15 17:07:19
 * @Last Modified by:   SsmartCookies
-* @Last Modified time: 2019-04-15 22:41:58
+* @Last Modified time: 2019-04-15 22:55:46
 */
 function [outDate,outVars] = ScaleT(Date,Vars,varargin)
 %---------------------------------------------------
@@ -51,7 +51,7 @@ parNames = {'Scale','Method','Dm','Mrange','Yrange'};
 default = {[],'mean',1,[],[]};
 [vScale,vMethod,vDm,vMrange,vYrange] = internal.stats.parseArgs(parNames,default,varargin{:});
 ScaleName = {'d2m','d2y','m2y'};
-vScale = internal.stats.getParamVal(vScale,ScaleName,'''Scale''');
+if ~isempty(vScale),vScale = internal.stats.getParamVal(vScale,ScaleName,'''Scale''');end
 MethodNames = {'mean','median','max','min','sum'};
 vMethod = internal.stats.getParamVal(vMethod,MethodNames,'''Method''');
 if vDm>length(size(Vars))||vDm<0
