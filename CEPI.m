@@ -1,6 +1,6 @@
 function  Result = CEPI(Date,Vars,varargin)
 %-------------------------------------------------
-% 该函数支持常见极端降水指标的计算
+% 该函数支持常见极端降水指数的计算
 % 输入变量：
 %         Date为时间矩阵（日尺度）
 %         Vars为日降水变量矩阵（每一列代表一个站点或者格点的日降水序列）
@@ -35,6 +35,9 @@ function  Result = CEPI(Date,Vars,varargin)
 %          Result.PRCPEXT超过百分位阈值的日降水的[年/月]总降水量（ExP）和总降水日数（ExD）
 %
 % 例如：Result = CEPI(Date,Vars,'Vrange',[20,Inf],'Percentage',90,'Wet',1,'ContiDays',5,'Scale','d2y','Mrange',[12,1,2])
+%      即：求取冬季（12,1,2月）的极端降水指数
+% v1.0
+% copyright@smartcookies
 
 %% argcheck
 narginchk(0,16);
