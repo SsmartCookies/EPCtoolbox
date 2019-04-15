@@ -1,3 +1,9 @@
+/*
+* @Author: SsmartCookies
+* @Date:   2019-04-15 17:07:19
+* @Last Modified by:   SsmartCookies
+* @Last Modified time: 2019-04-15 22:41:58
+*/
 function [outDate,outVars] = ScaleT(Date,Vars,varargin)
 %---------------------------------------------------
 % 该函数支持气候变量从高时间分辨率向低时间分辨率转换，最低时间分辨率为日（d）
@@ -10,18 +16,18 @@ function [outDate,outVars] = ScaleT(Date,Vars,varargin)
 %               'd2m'，日尺度 -> 月尺度
 %               'd2y'，日尺度 -> 年尺度
 %               'm2y'，月尺度 -> 年尺度
-%         'Method'用于确定要素转换方法，可供选项包括：      
+%         'Method'用于确定要素转换方法，可供选项包括：
 %               'mean'，默认选项，取均值
 %               'median'，取中位值
 %               'max'，取最大值
 %               'min'，取最小值
-%               'sum'，取加和值 
-%         'Mrange'用于确定尺度转换的特定顺序月份，可供选项包括：         
+%               'sum'，取加和值
+%         'Mrange'用于确定尺度转换的特定顺序月份，可供选项包括：
 %               []，默认选项,无特定顺序月份
 %               [a,b,c...]，确定a.b.c等顺序月份的要素进行尺度转换，参数值∈[1,12]
 %                           注意参数的顺序特性，如[12,1,2]将选取前一年的12月与该年
 %                           的1、2月份而非该年的1、2、12月份，后者为应写作[1,2,12]
-%         'Yrange'用于确定尺度转换的特定年份，可供选项包括：                                
+%         'Yrange'用于确定尺度转换的特定年份，可供选项包括：
 %               []，默认选项,无特定年份
 %               [a,b,c...]，确定a.b.c等年份的要素进行尺度转换，超出输入变量（Date）
 %                           中的最小/大年份的参数为非法输入参数
@@ -34,9 +40,9 @@ function [outDate,outVars] = ScaleT(Date,Vars,varargin)
 %         outVars为尺度转换后的气候变量矩阵
 %
 % 例如：[outDate,outVars] = ScaleT(Date,Vars,'Scale','d2y','Method','mean','Mrange',[4:8],'Yrange',[1980:2010],'Dm',1)
-%      即：将1980-2010年4月至8月的气候变量数据求取均值作为对应年份的气候特征值 
+%      即：将1980-2010年4月至8月的气候变量数据求取均值作为对应年份的气候特征值
 %
-% v1.0  
+% v1.0
 % copyright@smartcookies
 
 %% argcheck
@@ -59,7 +65,7 @@ if ~isequal(size(Date,1),size(Vars,vDm))
 
 %% main function
 [Date,Vars] = OrderCheck(Date,Vars);
- if isempty(vMrange)&&isempty(vYrange),   vDate = Date;  vVars = Vars;  
+ if isempty(vMrange)&&isempty(vYrange),   vDate = Date;  vVars = Vars;
  else [vDate,vVars] = Input_select(Date,Vars,vDm,vMrange,vYrange);end
  if isempty(vScale), outDate = vDate; outVars = vVars; return;
  elseif strcmpi(vScale,'d2m')&&isequal(size(vDate,2),3),    nScale = 2;
@@ -68,14 +74,12 @@ if ~isequal(size(Date,1),size(Vars,vDm))
  end
 [outDate,~,class]  = unique(vDate(:,1:nScale),'rows');
 for i=1:length(outDate)
+  ID = find(class==i);
+  spVars = DimVars(vVars,vDm,ID);
+  str = Dmn(Vars,vDm,i);
     if strcmpi(vMethod,'max')||strcmpi(vMethod,'min')
-        ID = find(class==i);
-        spVars = DimVars(vVars,vDm,ID);
-        str = Dmn(Vars,vDm,i);
         eval([str,'=',vMethod,'(spVars,[],',int2str(vDm),');']);
     elseif strcmpi(vMethod,'mean')||strcmpi(vMethod,'median')||strcmpi(vMethod,'sum')
-        spVars = DimVars(vVars,vDm,ID);
-        str = Dmn(Vars,vDm,i);
         eval([str,'=',vMethod,'(spVars,',int2str(vDm),');']);
     end
 end
@@ -89,7 +93,7 @@ if nDate==1||nDate==3, Tlong = datenum(outDate1)-datenum(outDate0)+1;
 elseif nDate==2,Tlong = sum((datenum(outDate1)-datenum(outDate0)).*[12,1])+1;
 end
  ismiss = ~isequal(Tlong,size(Date,1));
-if ismiss, warning('There is missing date value in Date !Please check it!');      
+if ismiss, warning('There is missing date value in Date !Please check it!');
 else
     [~,order,~] = unique(Date,'rows');
     issort = isequal(order,sort(order,'ascend'));
@@ -129,7 +133,7 @@ else
     sID = sort(ID,'ascend');
     if isequal(vMrange,sort(vMrange))
         Date = tyDate(sID,:);
-    else 
+    else
         Date = tyDate(sID,:);
         ID = find(Date(:,2)==vMrange(1));
         id1 = [ID(diff([-1;ID])~=1);length(Date)+1];
@@ -156,7 +160,7 @@ while n<=nDm
     end
     n = n+1;
 end
-eval([str,';']); 
+eval([str,';']);
 end
 function str = Dmn(Vars,Dm,ni)
 ni = reshape(ni,1,length(ni));
