@@ -1,3 +1,9 @@
+/*
+* @Author: SsmartCookies
+* @Date:   2019-04-15 21:26:45
+* @Last Modified by:   SsmartCookies
+* @Last Modified time: 2019-04-16 21:19:26
+*/
 function  Result = CEPI(Date,Vars,varargin)
 %-------------------------------------------------
 % 该函数支持常见极端降水指数的计算
@@ -11,7 +17,7 @@ function  Result = CEPI(Date,Vars,varargin)
 %          'Vrange'用于确定极端降水量的固定阈值，可供选项包括：
 %                [0,Inf],默认选项
 %                [a,b],确定a≤日降水量＜b的基本单位（1日）为极端降水事件，注意a不应＜0且不应＞b
-%          'Wet'用于确定湿润天的最小降水量，可供选项包括： 
+%          'Wet'用于确定湿润天的最小降水量，可供选项包括：
 %                1,默认选项,即日降水量为1mm
 %                a,确定a≤日降水量的基本单位（1日）为湿润天
 %          'ContiDays'用于确定统计极端降水的基本单位，可供选项包括：
@@ -53,23 +59,23 @@ if ~internal.stats.isScalarInt(vContiDays,1,28),   error('The value of ContiDays
 %% Input select function
 oVars = Vars;
 if ~isempty(vMrange),[Date,Vars] = Input_select(Date,Vars,vMrange);end
-%% total precipitation and number of wet days and dry days 
+%% total precipitation and number of wet days and dry days
 pDate = Date; dVars = bsxfun(@ge,Vars,vWet);  pVars = Vars.*dVars;
 [time,wPtot] = ScaleT(pDate,pVars,vScale,'sum');
 [~,wDtot] = ScaleT(pDate,dVars,vScale,'sum');
 Result.PRCPTOT.Date = time;    Result.PRCPTOT.wPtot = wPtot;
-Result.PRCPTOT.wDtot = wDtot;   
+Result.PRCPTOT.wDtot = wDtot;
 %--------------------------
 dVars2 = bsxfun(@lt,Vars,vWet); pVars2 = Vars.*dVars2;
 [~,dPtot] = ScaleT(pDate,pVars2,vScale,'sum');
 [~,dDtot] = ScaleT(pDate,dVars2,vScale,'sum');
 Result.PRCPTOT.dPtot = dPtot;   Result.PRCPTOT.dDtot = dDtot;
 %--------------------------
-%% maximum precipitation in consecutive appointed days 
+%% maximum precipitation in consecutive appointed days
 pDate = Date; pVars=Vars;
 [time,maxV,maxD] = MaxPofConD(pDate,pVars,vContiDays,vScale);
 Result.MaxPofConD.Date = time;  Result.MaxPofConD.maxV = maxV;
-Result.MaxPofConD.maxD = maxD;    
+Result.MaxPofConD.maxD = maxD;
 %% total precipitation and number of extreme precipitation days determined by a fixed threshold
 pDate = Date; dVars = zeros(size(Vars)); dVars(vVrange(1)<=Vars&Vars<vVrange(2)) = 1;
 [time,Pxx] = ScaleT(pDate,Vars.*dVars,vScale,'sum');
@@ -78,17 +84,17 @@ Result.PRCPLEV.Date = time;   Result.PRCPLEV.Pxx = Pxx;  Result.PRCPLEV.Dxx = Dx
 %% total precipitation and number of extreme precipitation days determined by a percentile threshold
 pDate = Date;   thr = ThreProcess(oVars,vWet,vPercentage);
 dVars = bsxfun(@gt,Vars,reshape(thr,1,length(thr)));
-[time,ExP] = ScaleT(pDate,Vars.*dVars ,vScale,'sum'); 
+[time,ExP] = ScaleT(pDate,Vars.*dVars ,vScale,'sum');
 [~,ExD] = ScaleT(pDate,dVars,vScale,'sum');
-Result.PRCPEXT.Date = time; Result.PRCPEXT.Thresgold = thr;
+Result.PRCPEXT.Date = time; Result.PRCPEXT.Threshold= thr;
 Result.PRCPEXT.Pxxp = ExP;  Result.PRCPEXT.Dxxp = ExD;
-%% the max number  of consecutive wet and dry days  
-pDate = Date; dVars = bsxfun(@ge,Vars,vWet);  
+%% the max number  of consecutive wet and dry days
+pDate = Date; dVars = bsxfun(@ge,Vars,vWet);
 [time,ConMaxWet,ConWet] = ContinuityDays(pDate,dVars,vScale);
 Result.CWD.Date = time;   Result.CWD.MaxW = ConMaxWet;
 Result.CWD.ConWD = ConWet;
 %------------------------------
-dVars2 = bsxfun(@lt,Vars,vWet); 
+dVars2 = bsxfun(@lt,Vars,vWet);
 [~,ConMaxDry,ConDdry] = ContinuityDays(pDate,dVars2,vScale);
 Result.CDD.Date = time;   Result.CWD.MaxDry = ConMaxDry;
 Result.CDD.ConDD = ConDdry;
@@ -112,7 +118,7 @@ else
     sID = sort(ID,'ascend');
     if isequal(vMrange,sort(vMrange))
         outDate = Date(sID,:);
-    else 
+    else
         outDate = Date(sID,:);
         ID = find(outDate(:,2)==vMrange(1));
         id1 = [ID(diff([-1;ID])~=1);length(outDate)+1];
@@ -124,8 +130,8 @@ else
 end
 end
 function [OutDate,OutVars] = ScaleT(Date,Vars,vScale,vMethod)
-if strcmpi(vScale,'d2m'),  nScale=2;   
-elseif strcmpi(vScale,'d2y'),  nScale=1; 
+if strcmpi(vScale,'d2m'),  nScale=2;
+elseif strcmpi(vScale,'d2y'),  nScale=1;
 end
 [time,~,class]  = unique(Date(:,1:nScale),'rows');
 for i=1:length(time)
@@ -135,22 +141,22 @@ for i=1:length(time)
     eval(['data(',int2str(i),',:)=',vMethod,'(Vars((class==',int2str(i),'),:),1);']);
     end
 end
-    OutDate = time; OutVars = data; 
+    OutDate = time; OutVars = data;
 end
 function [time,maxV,maxD] = MaxPofConD(Date,Vars,vContiDays,vScale)
 if strcmpi(vScale,'d2m'),        nScale=2;
 elseif strcmpi(vScale,'d2y'),    nScale=1;
-end   
+end
 [time,~,class] = unique(Date(:,1:nScale),'rows');
-for i = 1:length(time)       
-    ObjectV = Vars((class==i),:);   
+for i = 1:length(time)
+    ObjectV = Vars((class==i),:);
     ObjectD = Date((class==i),:);
     clear ConV;
     for j=1:length(ObjectD)-(vContiDays-1)
          ConV(j,:) = sum(ObjectV(j:j+vContiDays-1,:),1);
     end
     maxV(i,:) = max(ConV,[],1);
-    
+
     for k=1:size(Vars,2)
         maxID = find(ConV(:,k)==maxV(i,k));
         for h=1:length(maxID)
@@ -162,13 +168,13 @@ end
 function [time,ConMax,ConXD] = ContinuityDays(Date,Vars,vScale)
 if strcmpi(vScale,'d2m'),        nScale=2;
 elseif strcmpi(vScale,'d2y'),    nScale=1;
-end   
+end
 [time,~,class]  = unique(Date(:,1:nScale),'rows');
 for i = 1:length(time)
     ObjectV = Vars((class==i),:);
     ObjectD = Date((class==i),:);
     for j=1:size(ObjectV,2)
-        temp = diff([0;ObjectV(:,j);0]);  ids = find(temp==1);  ide = find(temp==-1); 
+        temp = diff([0;ObjectV(:,j);0]);  ids = find(temp==1);  ide = find(temp==-1);
         Ds = ide-ids;  conD = unique(Ds);
         for h=1:length(conD)
             ConXD{i,j}{h,1} = conD(h);    ConXD{i,j}{h,2} = sum(Ds==conD(h));
@@ -189,7 +195,7 @@ threshold=zeros(1,size(Vars,2));
      wetflow = sort(wetflow,'ascend');
      threshold(i) = prctile(wetflow,vPercentage);
     % n = length(wetflow);
-     %ID = ceil(n*vPercentage/100); 
+     %ID = ceil(n*vPercentage/100);
      %
      %threshold(i) = wetflow(ID);
 end
